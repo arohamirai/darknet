@@ -14,8 +14,10 @@
 #include "opencv2/highgui/highgui_c.h"
 #include "opencv2/imgproc/imgproc_c.h"
 #endif
+#include <stdbool.h>
 
-
+extern IplImage *g_frame;
+extern volatile bool bBusy,bReady;
 int windows = 0;
 
 float colors[6][3] = { {1,0,1}, {0,0,1},{0,1,1},{0,1,0},{1,1,0},{1,0,0} };
@@ -501,9 +503,13 @@ image load_image_cv(char *filename, int channels)
 
 image get_image_from_stream(CvCapture *cap)
 {
-    IplImage* src = cvQueryFrame(cap);
+    while(bBusy) {}
+    bBusy = true;
+    IplImage* src = g_frame;
+    //IplImage* src = cvQueryFrame(cap);
     if (!src) return make_empty_image(0,0,0);
     image im = ipl_to_image(src);
+    bBusy = false;
     rgbgr_image(im);
     return im;
 }

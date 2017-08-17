@@ -1,0 +1,4 @@
+./darknet detector demo cfg/coco.data cfg/yolo.cfg yolo.weights newfile.avi
+
+测试文件和权重参数下载地址：
+链接: https://pan.baidu.com/s/1pL7bYH1 密码: 42ds
