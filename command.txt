@@ -2,3 +2,16 @@
 
 测试文件和权重参数下载地址：
 链接: https://pan.baidu.com/s/1pL7bYH1 密码: 42ds
+
+
+第二版：
+        author:lifeng
+        date:2017.08.18
+        说明
+       1.海康相机登陆,帐号：admin   密码：admin12345
+       2.图像分辨率：1280x720
+
+
+错误：
+描述：CUDA Error: invalid device function
+原因：CUDA 计算能力不匹配，修改CMakeLists.txt 中的架构型号。

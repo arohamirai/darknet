@@ -16,8 +16,17 @@
 #endif
 #include <stdbool.h>
 
+#include <errno.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
 extern IplImage *g_frame;
 extern volatile bool bBusy,bReady;
+extern int connfd;
+extern g_width,g_height;
 int windows = 0;
 
 float colors[6][3] = { {1,0,1}, {0,0,1},{0,1,1},{0,1,0},{1,1,0},{1,0,0} };
@@ -182,7 +191,7 @@ image **load_alphabet()
 void draw_detections(image im, int num, float thresh, box *boxes, float **probs, char **names, image **alphabet, int classes)
 {
     int i;
-
+	int flag = 0;
     for(i = 0; i < num; ++i){
         int class = max_index(probs[i], classes);
         float prob = probs[i][class];
@@ -218,14 +227,44 @@ void draw_detections(image im, int num, float thresh, box *boxes, float **probs,
             if(right > im.w-1) right = im.w-1;
             if(top < 0) top = 0;
             if(bot > im.h-1) bot = im.h-1;
-
+			/*
             draw_box_width(im, left, top, right, bot, width, red, green, blue);
             if (alphabet) {
                 image label = get_label(alphabet, names[class], (im.h*.03)/10);
                 draw_label(im, top + width, left, label, rgb);
             }
+			*/
+			 //只画出人的类
+	   		 if(0 == strcmp(names[class],"person"))
+	   		 {
+				flag = 1;
+            	draw_box_width(im, left, top, right, bot, width, red, green, blue);
+            	if (alphabet) 
+	    	    {
+            	    image label = get_label(alphabet, "person", (im.h*.03)/10);
+            	    draw_label(im, top + width, left, label, rgb);
+            	}
+	  			CvPoint center;
+				center.x=(left+right)/2.0;
+				center.y=(top+bot)/2.0;
+				printf("person certer point:(%d，%d)\n",center.x,center.y);
+				
+	            char point_str[20]={0};
+	            // 目前只发X坐标
+	            sprintf(point_str,"%f",(double)center.x);
+	            send(connfd,point_str,20,0);
+
+	   		 }
         }
     }
+	if(!flag)
+		{
+		    char point_str[20]={0};
+	        // 目前只发X坐标
+	       sprintf(point_str,"%f",(double)(g_width/2));
+	        send(connfd,point_str,20,0);
+			printf("person certer point:(%f，%f)\n",g_width/2,g_height/2);
+		}
 }
 
 void transpose_image(image im)

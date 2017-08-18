@@ -23,12 +23,54 @@
 #endif
 #include "HikMeaDis.h"-
 
+
+#include <errno.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+
+
+
 extern int lPort;
+int connfd=-1;
 
 extern "C" void run_detector(int argc, char **argv);
 
 int main(int argc, char **argv)
 {
+//----------------  连上哨兵机器人
+ 	int listenfd;
+	//int connfd;
+ 	struct sockaddr_in sockaddr;
+ 	
+ 	int n;
+ 
+ 	memset(&sockaddr,0,sizeof(sockaddr));
+ 
+ 	sockaddr.sin_family = AF_INET;
+ 	sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+ 	sockaddr.sin_port = htons(6666);
+ 
+ 	listenfd = socket(AF_INET,SOCK_STREAM,0);
+ 
+ 	bind(listenfd,(struct sockaddr *) &sockaddr,sizeof(sockaddr));
+ 
+ 	listen(listenfd,1);
+
+ 
+ 	printf("Please wait for the client information\n");
+
+ 	if((connfd = accept(listenfd,(struct sockaddr*)NULL,NULL))==-1)
+ 	{
+ 	printf("accpet socket error: %s errno :%d\n",strerror(errno),errno);
+	return 0;	
+ 	}
+	else
+		printf("accpet sucess\n");
+
+// ------------  海康相机相关设置
 //---------------------------------------
 	// ³õÊ¼»¯
 	NET_DVR_Init();
@@ -101,7 +143,6 @@ int main(int argc, char **argv)
 	//---------------------------------------
 	//¹Ø±ÕÔ¤ÀÀ
 	NET_DVR_StopRealPlay(lRealPlayHandle);
-
 	//ÊÍ·Å²¥·Å¿â×ÊÔ´
 	PlayM4_Stop(lPort);
 	PlayM4_CloseStream(lPort);
@@ -110,9 +151,10 @@ int main(int argc, char **argv)
 	//×¢ÏúÓÃ»§
 	NET_DVR_Logout(lUserID);
 	NET_DVR_Cleanup();
-	return 0;
 
-
+//--------------  断开与哨兵机器人的连接
+    close(connfd);
+ 	close(listenfd);
 	return 0;
 
 

@@ -6,8 +6,10 @@ int lPort = 0; // 全局播放通道
 
 
 volatile bool bBusy = false,bReady = false;
-IplImage *g_frame = cvCreateImage(cvSize(1280,720),IPL_DEPTH_8U,3);
-IplImage *g_frame1 = cvCreateImage(cvSize(1280,720),IPL_DEPTH_8U,3);
+int g_width = 1280;
+int g_height = 720;
+IplImage *g_frame = cvCreateImage(cvSize(g_width,g_height),IPL_DEPTH_8U,3);
+IplImage *g_frame1 = cvCreateImage(cvSize(g_width,g_height),IPL_DEPTH_8U,3);
 
 void CALLBACK DecCBFun(int nPort, char * pBuf, int nSize, FRAME_INFO * pFrameInfo, void *nReserved1, int nReserved2)
 {
